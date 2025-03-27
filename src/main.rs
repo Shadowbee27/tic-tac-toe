@@ -1,4 +1,5 @@
 use std::io::*;
+use struct_iterable::Iterable;
 
 #[derive(PartialEq, Clone)]
 enum TileState {
@@ -11,6 +12,17 @@ enum ActivePlayer {
     PlayerX,
     PlayerO,
 }
+#[derive(Iterable)]
+struct Player{
+    win1:i8,
+    win2:i8,
+    win3:i8,
+    win4:i8,
+    win5:i8,
+    win6:i8,
+    win7:i8,
+    win8:i8,
+}
 
 impl Clone for ActivePlayer {
     fn clone(&self) -> ActivePlayer {
@@ -22,6 +34,26 @@ impl Clone for ActivePlayer {
 }
 
 fn main() {
+    let player_x = Player{
+        win1: 0,
+        win2: 0,
+        win3: 0,
+        win4: 0,
+        win5: 0,
+        win6: 0,
+        win7: 0,
+        win8: 0,
+    };
+    let player_o = Player{
+        win1: 0,
+        win2: 0,
+        win3: 0,
+        win4: 0,
+        win5: 0,
+        win6: 0,
+        win7: 0,
+        win8: 0,
+    };
     let player = ActivePlayer::PlayerX;
     let field: [TileState; 9] = [
         TileState::Empty,
@@ -34,7 +66,7 @@ fn main() {
         TileState::Empty,
         TileState::Empty,
     ];
-    game(field, player)
+    game(field, player, player_x,player_o)
 }
 fn input() -> String {
     let mut field = String::new();
@@ -72,13 +104,13 @@ fn input_handler(
     }
     (board, player)
 }
-fn game(mut board: [TileState; 9], mut player: ActivePlayer) {
+fn game(mut board: [TileState; 9], mut player: ActivePlayer, player_o: Player,player_x: Player) {
     loop {
     let field = input();
     let new_board = input_handler(field, board, player);
     board = new_board.0;
     player = new_board.1;
-//    win_detection()
+    win_detection(player_o,player_x);
     print_board(board.clone())
 }}
 
@@ -101,6 +133,13 @@ fn print_board(field: [TileState; 9]) {
     }
     println!("{board}");
 }
-fn win_detection() {
-    todo!()
+fn win_detection(player_x: PlayerO,player_o: PlayerO) {
+    for (field_name, field_value) in player_o.iter(){
+        println!("player O won");
+    }
+    for (field_name, field_value) in player_x.iter(){
+        if field_value== 3{
+            println!("player X won");
+        }
+    }
 }
