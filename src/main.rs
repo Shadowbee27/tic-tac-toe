@@ -44,9 +44,9 @@ fn input_handler(
     input: String,
     mut board: [TileState; 9],
     mut player: ActivePlayer,
-    player_o: [i8; 8],
-    player_x: [i8; 8],
-) -> ([TileState; 9], ActivePlayer) {
+    mut player_o: [i8; 8],
+    mut player_x: [i8; 8],
+) -> ([TileState; 9], ActivePlayer, [i8; 8], [i8; 8]) {
     let mut win = Vec::new();
     let mut change_field;
     match input.as_str() {
@@ -113,19 +113,28 @@ fn input_handler(
         game(board.clone(), player.clone(), player_o, player_x);
     } else if player == ActivePlayer::PlayerX {
         board[change_field] = TileState::PlayerX;
+        player_x = win_detection_handler(win, player_x);
         player = ActivePlayer::PlayerO
     } else if player == ActivePlayer::PlayerO {
         board[change_field] = TileState::PlayerO;
+        player_o = win_detection_handler(win, player_o);
         player = ActivePlayer::PlayerX
     }
-    (board, player)
+    (board, player, player_x, player_o)
 }
-fn game(mut board: [TileState; 9], mut player: ActivePlayer, player_o: [i8; 8], player_x: [i8; 8]) {
+fn game(
+    mut board: [TileState; 9],
+    mut player: ActivePlayer,
+    mut player_o: [i8; 8],
+    mut player_x: [i8; 8],
+) {
     loop {
         let field = input();
         let new_board = input_handler(field, board, player, player_o.clone(), player_x.clone());
         board = new_board.0;
         player = new_board.1;
+        player_x = new_board.2;
+        player_o = new_board.3;
         win_detection(player_o.clone(), player_x.clone(), board.clone());
         print_board(board.clone())
     }
@@ -150,8 +159,17 @@ fn print_board(field: [TileState; 9]) {
     }
     println!("{board}");
 }
+
+fn win_detection_handler(input_fields: Vec<i32>, mut player: [i8; 8]) -> [i8; 8] {
+    for p in input_fields {
+        player[p as usize] = player[p as usize] + 1;
+    }
+    println!("player= {:?}", player);
+    player
+}
 fn win_detection(player_x: [i8; 8], player_o: [i8; 8], board: [TileState; 9]) {
     for i in player_x.clone() {
+        println!("i = {i}");
         if i == 3 {
             println!("Player X won");
             print_board(board.clone());
