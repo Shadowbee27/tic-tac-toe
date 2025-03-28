@@ -1,6 +1,4 @@
 use std::io::*;
-use struct_iterable::Iterable;
-
 #[derive(PartialEq, Clone)]
 enum TileState {
     Empty,
@@ -12,18 +10,6 @@ enum ActivePlayer {
     PlayerX,
     PlayerO,
 }
-#[derive(Iterable)]
-struct Player{
-    win1:i8,
-    win2:i8,
-    win3:i8,
-    win4:i8,
-    win5:i8,
-    win6:i8,
-    win7:i8,
-    win8:i8,
-}
-
 impl Clone for ActivePlayer {
     fn clone(&self) -> ActivePlayer {
         match self {
@@ -32,28 +18,9 @@ impl Clone for ActivePlayer {
         }
     }
 }
-
 fn main() {
-    let player_x = Player{
-        win1: 0,
-        win2: 0,
-        win3: 0,
-        win4: 0,
-        win5: 0,
-        win6: 0,
-        win7: 0,
-        win8: 0,
-    };
-    let player_o = Player{
-        win1: 0,
-        win2: 0,
-        win3: 0,
-        win4: 0,
-        win5: 0,
-        win6: 0,
-        win7: 0,
-        win8: 0,
-    };
+    let player_x: [i8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+    let player_o: [i8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
     let player = ActivePlayer::PlayerX;
     let field: [TileState; 9] = [
         TileState::Empty,
@@ -66,7 +33,7 @@ fn main() {
         TileState::Empty,
         TileState::Empty,
     ];
-    game(field, player, player_x,player_o)
+    game(field, player, player_x, player_o)
 }
 fn input() -> String {
     let mut field = String::new();
@@ -77,24 +44,73 @@ fn input_handler(
     input: String,
     mut board: [TileState; 9],
     mut player: ActivePlayer,
+    player_o: [i8; 8],
+    player_x: [i8; 8],
 ) -> ([TileState; 9], ActivePlayer) {
-    let mut change_field = 0;
+    let mut win = Vec::new();
+    let mut change_field;
     match input.as_str() {
-        "a1" => change_field = 1,
-        "a2" => change_field = 2,
-        "a3" => change_field = 3,
-        "b1" => change_field = 4,
-        "b2" => change_field = 5,
-        "b3" => change_field = 6,
-        "c1" => change_field = 7,
-        "c2" => change_field = 8,
-        "c3" => change_field = 9,
-        _ => panic!(),
+        "a1" => {
+            change_field = 1;
+            win.push(0);
+            win.push(3);
+            win.push(6);
+        }
+        "a2" => {
+            change_field = 2;
+            win.push(1);
+            win.push(3);
+        }
+        "a3" => {
+            change_field = 3;
+            win.push(2);
+            win.push(3);
+            win.push(7);
+        }
+        "b1" => {
+            change_field = 4;
+            win.push(0);
+            win.push(4);
+        }
+        "b2" => {
+            change_field = 5;
+            win.push(1);
+            win.push(4);
+            win.push(6);
+            win.push(7);
+        }
+        "b3" => {
+            change_field = 6;
+            win.push(2);
+            win.push(4);
+        }
+        "c1" => {
+            change_field = 7;
+            win.push(0);
+            win.push(5);
+            win.push(7);
+        }
+        "c2" => {
+            change_field = 8;
+            win.push(1);
+            win.push(5);
+        }
+        "c3" => {
+            change_field = 9;
+            win.push(2);
+            win.push(5);
+            win.push(6);
+        }
+        _ => {
+            println!("field doesn't exist");
+            change_field = 0;
+            game(board.clone(), player.clone(), player_o, player_x);
+        }
     }
     change_field -= 1;
     if board[change_field] == TileState::PlayerX || board[change_field] == TileState::PlayerO {
         println!("Field is already taken");
-        game(board.clone(), player.clone());
+        game(board.clone(), player.clone(), player_o, player_x);
     } else if player == ActivePlayer::PlayerX {
         board[change_field] = TileState::PlayerX;
         player = ActivePlayer::PlayerO
@@ -104,15 +120,16 @@ fn input_handler(
     }
     (board, player)
 }
-fn game(mut board: [TileState; 9], mut player: ActivePlayer, player_o: Player,player_x: Player) {
+fn game(mut board: [TileState; 9], mut player: ActivePlayer, player_o: [i8; 8], player_x: [i8; 8]) {
     loop {
-    let field = input();
-    let new_board = input_handler(field, board, player);
-    board = new_board.0;
-    player = new_board.1;
-    win_detection(player_o,player_x);
-    print_board(board.clone())
-}}
+        let field = input();
+        let new_board = input_handler(field, board, player, player_o.clone(), player_x.clone());
+        board = new_board.0;
+        player = new_board.1;
+        win_detection(player_o.clone(), player_x.clone(), board.clone());
+        print_board(board.clone())
+    }
+}
 
 fn print_board(field: [TileState; 9]) {
     let mut board = String::new();
@@ -133,13 +150,19 @@ fn print_board(field: [TileState; 9]) {
     }
     println!("{board}");
 }
-fn win_detection(player_x: PlayerO,player_o: PlayerO) {
-    for (field_name, field_value) in player_o.iter(){
-        println!("player O won");
+fn win_detection(player_x: [i8; 8], player_o: [i8; 8], board: [TileState; 9]) {
+    for i in player_x.clone() {
+        if i == 3 {
+            println!("Player X won");
+            print_board(board.clone());
+            main()
+        }
     }
-    for (field_name, field_value) in player_x.iter(){
-        if field_value== 3{
-            println!("player X won");
+    for x in player_o.clone() {
+        if x == 3 {
+            println!("Player X won");
+            print_board(board.clone());
+            main()
         }
     }
 }
