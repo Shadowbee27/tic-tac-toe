@@ -5,18 +5,10 @@ enum TileState {
     PlayerX,
     PlayerO,
 }
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 enum ActivePlayer {
     PlayerX,
     PlayerO,
-}
-impl Clone for ActivePlayer {
-    fn clone(&self) -> ActivePlayer {
-        match self {
-            ActivePlayer::PlayerX => ActivePlayer::PlayerX,
-            ActivePlayer::PlayerO => ActivePlayer::PlayerO,
-        }
-    }
 }
 fn main() {
     let player_x: [i8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -164,12 +156,10 @@ fn win_detection_handler(input_fields: Vec<i32>, mut player: [i8; 8]) -> [i8; 8]
     for p in input_fields {
         player[p as usize] += 1
     }
-    println!("player= {:?}", player);
     player
 }
 fn win_detection(player_x: [i8; 8], player_o: [i8; 8], board: [TileState; 9]) {
     for i in player_x {
-        println!("i = {i}");
         if i == 3 {
             println!("Player X won");
             print_board(board.clone());
@@ -178,7 +168,7 @@ fn win_detection(player_x: [i8; 8], player_o: [i8; 8], board: [TileState; 9]) {
     }
     for x in player_o {
         if x == 3 {
-            println!("Player X won");
+            println!("Player O won");
             print_board(board.clone());
             main()
         }
