@@ -1,12 +1,153 @@
-use std::io::*;
+use eframe::egui;
+use egui::{Color32, Rect, Stroke, Vec2};
 #[derive(PartialEq, Clone)]
-enum TileState {
-    Empty,
+enum ActivePlayer {
     PlayerX,
     PlayerO,
 }
+fn main() -> Result<(), eframe::Error> {
+    let options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "Tic Tac Toe game",
+        options,
+        Box::new(|_cc| Ok(Box::new(MyApp::default()))),
+    )
+}
+
+#[derive(Default)]
+struct MyApp {
+    counter: i32,
+}
+
+impl eframe::App for MyApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.label("Custom buttons with different outlined sides:");
+
+            let button_size = Vec2::new(180.0, 40.0);
+            let spacing = 10.0;
+
+            // Top only
+            if draw_custom_button(ui, "Top Border", button_size, BorderSides::top()).clicked() {
+                self.counter += 1;
+            }
+
+            ui.add_space(spacing);
+
+            // Left + Right
+            if draw_custom_button(ui, "Left & Right", button_size, BorderSides::left().with_right()).clicked() {
+                self.counter += 1;
+            }
+
+            ui.add_space(spacing);
+
+            // All sides
+            if draw_custom_button(ui, "All Sides", button_size, BorderSides::all()).clicked() {
+                self.counter += 1;
+            }
+
+            ui.add_space(spacing);
+
+            // Top + Bottom only
+            if draw_custom_button(ui, "Top & Bottom", button_size, BorderSides::top().with_bottom()).clicked() {
+                self.counter += 1;
+            }
+
+            ui.add_space(spacing * 2.0);
+            ui.label(format!("Counter: {}", self.counter));
+        });
+    }
+}
+
+/// Describes which sides of a button should have borders.
+#[derive(Default)]
+struct BorderSides {
+    top: bool,
+    bottom: bool,
+    left: bool,
+    right: bool,
+}
+
+impl BorderSides {
+    fn top() -> Self {
+        Self { top: true, ..Default::default() }
+    }
+    fn bottom() -> Self {
+        Self { bottom: true, ..Default::default() }
+    }
+    fn left() -> Self {
+        Self { left: true, ..Default::default() }
+    }
+    fn right() -> Self {
+        Self { right: true, ..Default::default() }
+    }
+    fn all() -> Self {
+        Self { top: true, bottom: true, left: true, right: true }
+    }
+
+    fn with_top(mut self) -> Self {
+        self.top = true;
+        self
+    }
+    fn with_bottom(mut self) -> Self {
+        self.bottom = true;
+        self
+    }
+    fn with_left(mut self) -> Self {
+        self.left = true;
+        self
+    }
+    fn with_right(mut self) -> Self {
+        self.right = true;
+        self
+    }
+}
+
+fn draw_custom_button(
+    ui: &mut egui::Ui,
+    text: &str,
+    size: Vec2,
+    borders: BorderSides,
+) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(size, egui::Sense::click());
+    let painter = ui.painter();
+
+    let stroke = Stroke::new(2.0, Color32::LIGHT_BLUE);
+
+    if borders.top {
+        painter.line_segment([rect.left_top(), rect.right_top()], stroke);
+    }
+    if borders.bottom {
+        painter.line_segment([rect.left_bottom(), rect.right_bottom()], stroke);
+    }
+    if borders.left {
+        painter.line_segment([rect.left_top(), rect.left_bottom()], stroke);
+    }
+    if borders.right {
+        painter.line_segment([rect.right_top(), rect.right_bottom()], stroke);
+    }
+
+    // Optional: hover background
+    if response.hovered() {
+        painter.rect_filled(rect, 0.0, Color32::from_gray(30));
+    }
+
+    // Draw centered text
+    painter.text(
+        rect.center(),
+        egui::Align2::CENTER_CENTER,
+        text,
+        egui::FontId::proportional(16.0),
+        Color32::WHITE,
+    );
+
+    response
+}
+
+/*
 #[derive(PartialEq, Clone)]
-enum ActivePlayer {
+enum TileState {
+    Empty,
     PlayerX,
     PlayerO,
 }
@@ -174,3 +315,4 @@ fn win_detection(player_x: [i8; 8], player_o: [i8; 8], board: [TileState; 9]) {
         }
     }
 }
+*/
