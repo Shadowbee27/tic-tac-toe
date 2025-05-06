@@ -1,0 +1,41 @@
+name: Rust
+on:
+  push:
+    branches:
+      - master
+      - egui
+  pull_request:
+    branches:
+      - master
+      - egui
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --verbose --release
+      - name: Run Linter
+        run: cargo-clippy
+      - name: Build Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_${{ matrix.os }}
+          path: |
+            target/release/tic-tac-toe
+            target\release\tic-tac-toe.exe
+            Guess-the-Door/target/release/tic-tac-toe
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 9
+          overwrite: false
+          include-hidden-files: false
